@@ -6,6 +6,7 @@ import com.zzheads.Downloader.model.TaskFile;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -92,17 +93,6 @@ public class Application {
             }
         }
 
-        // проверим наличие файла (и его синтаксис), наличие папки
-        TaskFile taskFile = new TaskFile(pathToFile); // TODO: проверка синтаксиса файла, а то можно понаписать...
-        for (Task task : taskFile.getTasks()) {
-            System.out.printf("Путь: %s в файл: %s\n", task.getPath(), task.getFileName());
-        }
-
-        File file = new File(nameOfDir);
-        if (!file.exists() || !file.isDirectory()) {
-            System.out.printf("Неверное имя папки для сохранения: %s", nameOfDir);
-            return;
-        }
 
         System.out.printf("Параметры: \n");
         System.out.printf("Количество потоков: %d\n", numberOfFlows);
@@ -110,14 +100,43 @@ public class Application {
         System.out.printf("Путь к файлу: %s\n", pathToFile);
         System.out.printf("Имя папки: %s\n\n", nameOfDir);
 
-        Downloader dl = new Downloader();
-        try {
-            dl.getFile("https://www.apple.com");
-        } catch (IOException exc) {
-            System.out.printf("%s", exc.toString());
+
+        // проверим наличие файла (и его синтаксис), наличие папки
+        TaskFile taskFile = new TaskFile(pathToFile); // TODO: проверка синтаксиса файла, а то можно понаписать...
+
+        System.out.printf("Получены задания: \n");
+        for (Task task : taskFile.getTasks()) {
+            System.out.printf("Путь: %s в файл: %s\n", task.getPath(), task.getFileName());
+        }
+        System.out.printf("\n");
+
+        File file = new File(nameOfDir);
+        if (!file.exists() || !file.isDirectory()) {
+            System.out.printf("Неверное имя папки для сохранения: %s", nameOfDir);
             return;
         }
 
+
+        for (Task task : taskFile.getTasks()) {
+            Downloader dl = new Downloader();
+            try {
+                dl.getFile(task.getPath());
+            } catch (IOException exc) {
+                System.out.printf("%s", exc.toString());
+                return;
+            }
+            String pathToWriteFile = nameOfDir+"/"+task.getFileName();
+            File fileToWrite = new File(pathToWriteFile);
+            try {
+                FileWriter writer = new FileWriter(fileToWrite);
+                writer.write(dl.getBufferOfChars());
+                writer.close();
+            } catch (IOException e) {
+                System.out.printf("%s", e.toString());
+                return;
+            }
+            System.out.printf("Содержимое из: %s скачано и записано в файл: %s\n", task.getPath(), pathToWriteFile);
+        }
 
 
     }

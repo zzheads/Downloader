@@ -31,11 +31,22 @@ public class Downloader implements DownloaderInterface {
         return buffer;
     }
 
+    public Downloader() {
+    }
+
     public byte[] getBuffer() {
         return buffer;
     }
 
     public void setBuffer(byte[] buffer) {
         this.buffer = buffer;
+    }
+
+    public char[] getBufferOfChars() {
+        char[] chars = new char[this.buffer.length];
+        for (int i=0;i<this.buffer.length;i++) {
+            chars[i] = (char) this.buffer[i];
+        }
+        return chars;
     }
 }
